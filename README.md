@@ -170,11 +170,15 @@ Each service has its own `.env` file. See individual service READMEs for details
 
 ## API Endpoints
 
-### Users Service
+**All API requests should go through the API Gateway at `http://localhost` (port 80).**
+
+The gateway routes requests to the appropriate microservices automatically.
+
+### Users Service (Public Endpoints - No JWT Required)
 
 #### Register User
 ```http
-POST http://localhost:3001/api/users/register
+POST http://localhost/api/users/register
 Content-Type: application/json
 
 {
@@ -186,7 +190,7 @@ Content-Type: application/json
 
 #### Login
 ```http
-POST http://localhost:3001/api/users/login
+POST http://localhost/api/users/login
 Content-Type: application/json
 
 {
@@ -211,13 +215,13 @@ Response:
 }
 ```
 
-### Todos Service
+### Todos Service (Protected Endpoints - JWT Required)
 
-All endpoints require authentication via Bearer token.
+All endpoints require authentication via Bearer token. The API Gateway validates JWT tokens before forwarding requests.
 
 #### Create Todo
 ```http
-POST http://localhost:3002/api/todos
+POST http://localhost/api/todos
 Authorization: Bearer <token>
 Content-Type: application/json
 
@@ -229,13 +233,13 @@ Content-Type: application/json
 
 #### Get All Todos
 ```http
-GET http://localhost:3002/api/todos
+GET http://localhost/api/todos
 Authorization: Bearer <token>
 ```
 
 #### Update Todo Status
 ```http
-PATCH http://localhost:3002/api/todos/:todoId/status
+PATCH http://localhost/api/todos/:todoId/status
 Authorization: Bearer <token>
 Content-Type: application/json
 
@@ -248,29 +252,45 @@ Valid status values: `pending`, `in_progress`, `completed`
 
 #### Delete Todo
 ```http
-DELETE http://localhost:3002/api/todos/:todoId
+DELETE http://localhost/api/todos/:todoId
 Authorization: Bearer <token>
 ```
 
+### Health Check Endpoints
+
+```http
+GET http://localhost/health              # Gateway health
+GET http://localhost/api/users/health   # Users service health
+GET http://localhost/api/todos/health   # Todos service health
+```
+
+**Note:** For development/testing, you can still access services directly:
+- Users Service: `http://localhost:3001/api/users/*`
+- Todos Service: `http://localhost:3002/api/todos/*`
+
+However, in production, all requests should go through the API Gateway.
+
 ## Example Workflow
+
+**All requests go through the API Gateway at `http://localhost`**
 
 1. **Register a new user:**
 ```bash
-curl -X POST http://localhost:3001/api/users/register \
+curl -X POST http://localhost/api/users/register \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"test123","name":"Test User"}'
 ```
 
 2. **Login to get token:**
 ```bash
-curl -X POST http://localhost:3001/api/users/login \
+curl -X POST http://localhost/api/users/login \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"test123"}'
 ```
 
 3. **Create a todo (use token from step 2):**
 ```bash
-curl -X POST http://localhost:3002/api/todos \
+curl -X POST http://localhost/api/todos \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE" \
   -d '{"title":"My first todo","description":"This is a test todo"}'
@@ -278,13 +298,13 @@ curl -X POST http://localhost:3002/api/todos \
 
 4. **Get all todos:**
 ```bash
-curl -X GET http://localhost:3002/api/todos \
+curl -X GET http://localhost/api/todos \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
 5. **Update todo status:**
 ```bash
-curl -X PATCH http://localhost:3002/api/todos/TODO_ID/status \
+curl -X PATCH http://localhost/api/todos/TODO_ID/status \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE" \
   -d '{"status":"completed"}'
@@ -292,9 +312,15 @@ curl -X PATCH http://localhost:3002/api/todos/TODO_ID/status \
 
 6. **Delete todo:**
 ```bash
-curl -X DELETE http://localhost:3002/api/todos/TODO_ID \
+curl -X DELETE http://localhost/api/todos/TODO_ID \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
+
+**Note:** The API Gateway automatically:
+- Routes `/api/users/*` → Users Service (port 3001)
+- Routes `/api/todos/*` → Todos Service (port 3002) with JWT validation
+- Validates JWT tokens before forwarding to Todos Service
+- Rejects invalid requests immediately (no backend calls)
 
 ## Project Structure
 
