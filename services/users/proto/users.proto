@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+// This proto file defines the gRPC service contract for the Users service.
+// It is used by:
+// 1. Users service: to implement the gRPC server
+// 2. Todos service: to generate the gRPC client for calling Users service
+// 
+// NOTE: When updating this file, ensure the same changes are made to
+// the proto/users.proto file in the Todos service to keep them in sync.
+
+package users;
+
+service UserService {
+  rpc CreateUser (CreateUserRequest) returns (UserResponse);
+  rpc Login (LoginRequest) returns (LoginResponse);
+  rpc ValidateUser (ValidateUserRequest) returns (UserResponse);
+  rpc GetUserById (GetUserByIdRequest) returns (UserResponse);
+}
+
+message CreateUserRequest {
+  string email = 1;
+  string password = 2;
+  string name = 3;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message ValidateUserRequest {
+  string userId = 1;
+}
+
+message GetUserByIdRequest {
+  string userId = 1;
+}
+
+message UserResponse {
+  string id = 1;
+  string email = 2;
+  string name = 3;
+  bool success = 4;
+  string message = 5;
+}
+
+message LoginResponse {
+  string token = 1;
+  UserResponse user = 2;
+  bool success = 3;
+  string message = 4;
+}
+
+

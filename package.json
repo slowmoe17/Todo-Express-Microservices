@@ -1,0 +1,15 @@
+{
+  "name": "todo-express-microservices",
+  "version": "1.0.0",
+  "description": "Express microservices application - parent directory for isolated services",
+  "private": true,
+  "scripts": {
+    "dev:users": "cd services/users && npm run dev",
+    "dev:todos": "cd services/todos && npm run dev",
+    "dev": "concurrently \"npm run dev:users\" \"npm run dev:todos\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
+
